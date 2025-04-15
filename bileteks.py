@@ -1,102 +1,88 @@
 import json
+from ticket import Ticket
+from cart import Cart
+from payment import Payment
 
-# filepath: cennik.json
-# Wczytanie cennika z pliku
-def wczytaj_cennik(plik):
-    with open(plik, 'r', encoding='utf-8') as f:
-        return json.load(f)
+class AutomatBiletowy:
+    def __init__(self, cennik_file):
+        self.cennik = self.wczytaj_cennik(cennik_file)
+        self.koszyk = Cart()
 
-# Wyświetlenie dostępnych biletów
-def wyswietl_cennik(cennik):
-    print("\nDostępne bilety:")
-    for typ, kategorie in cennik.items():
-        print(f"\n{typ.capitalize()}:")
-        for kategoria, bilety in kategorie.items():
-            print(f"  {kategoria.capitalize()}:")
-            for nazwa, cena in bilety.items():
-                print(f"    {nazwa}: {cena} zł")
+    def wczytaj_cennik(self, plik):
+        with open(plik, 'r', encoding='utf-8') as f:
+            return json.load(f)
 
-# Dodanie biletu do koszyka
-def dodaj_do_koszyka(cennik, koszyk):
-    while True:
-        typ = input("\nWybierz typ biletu (n - normalny, u - ulgowy): ").lower()
-        if typ in ['n', 'u']:
-            typ = 'normalny' if typ == 'n' else 'ulgowy'
-            break
-        print("Nieprawidłowy wybór. Spróbuj ponownie.")
+    def wyswietl_cennik(self):
+        print("\nDostępne bilety:")
+        for typ, kategorie in self.cennik.items():
+            print(f"\n{typ.capitalize()}:")
+            for kategoria, bilety in kategorie.items():
+                print(f"  {kategoria.capitalize()}:")
+                for nazwa, cena in bilety.items():
+                    print(f"    {nazwa}: {cena} zł")
 
-    kategorie = list(cennik[typ].keys())
-    for i, kategoria in enumerate(kategorie):
-        print(f"{i + 1}. {kategoria.capitalize()}")
-    while True:
-        wybor_kategorii = input("Wybierz kategorię biletu (cyfra): ")
-        if wybor_kategorii.isdigit() and 1 <= int(wybor_kategorii) <= len(kategorie):
-            kategoria = kategorie[int(wybor_kategorii) - 1]
-            break
-        print("Nieprawidłowy wybór. Spróbuj ponownie.")
-
-    bilety = list(cennik[typ][kategoria].keys())
-    for i, bilet in enumerate(bilety):
-        print(f"{i + 1}. {bilet} - {cennik[typ][kategoria][bilet]} zł")
-    while True:
-        wybor_biletu = input("Wybierz bilet (cyfra): ")
-        if wybor_biletu.isdigit() and 1 <= int(wybor_biletu) <= len(bilety):
-            bilet = bilety[int(wybor_biletu) - 1]
-            break
-        print("Nieprawidłowy wybór. Spróbuj ponownie.")
-
-    koszyk.append((typ, kategoria, bilet, cennik[typ][kategoria][bilet]))
-    print(f"\nDodano do koszyka: {bilet} - {cennik[typ][kategoria][bilet]} zł")
-
-# Obliczenie reszty
-def oblicz_reszte(do_zaplaty, zaplacono):
-    return round(zaplacono - do_zaplaty, 2)
-
-# Finalizacja transakcji
-def dokonaj_platnosci(koszyk):
-    suma = sum(bilet[3] for bilet in koszyk)
-    print(f"\nDo zapłaty: {suma} zł")
-    while True:
-        try:
-            zaplacono = float(input("Podaj kwotę, którą płacisz: "))
-            if zaplacono >= suma:
-                reszta = oblicz_reszte(suma, zaplacono)
-                print(f"Transakcja zakończona. Twoja reszta: {reszta} zł")
+    def dodaj_do_koszyka(self):
+        while True:
+            typ = input("\nWybierz typ biletu (n - normalny, u - ulgowy): ").lower()
+            if typ in ['n', 'u']:
+                typ = 'normalny' if typ == 'n' else 'ulgowy'
                 break
-            else:
-                print("Podana kwota jest za mała. Spróbuj ponownie.")
-        except ValueError:
-            print("Nieprawidłowa kwota. Spróbuj ponownie.")
-
-# Główna funkcja programu
-def automat_biletowy():
-    cennik = wczytaj_cennik('prices.json')
-    koszyk = []
-
-    while True:
-        print("\n1. Wyświetl cennik")
-        print("2. Dodaj bilet do koszyka")
-        print("3. Pokaż koszyk")
-        print("4. Dokonaj płatności")
-        print("5. Wyjdź")
-        wybor = input("Wybierz opcję (cyfra): ")
-
-        if wybor == '1':
-            wyswietl_cennik(cennik)
-        elif wybor == '2':
-            dodaj_do_koszyka(cennik, koszyk)
-        elif wybor == '3':
-            print("\nKoszyk:")
-            for bilet in koszyk:
-                print(f"{bilet[2]} - {bilet[3]} zł")
-        elif wybor == '4':
-            dokonaj_platnosci(koszyk)
-            koszyk.clear()
-        elif wybor == '5':
-            print("Dziękujemy za skorzystanie z automatu biletowego!")
-            break
-        else:
             print("Nieprawidłowy wybór. Spróbuj ponownie.")
 
+        kategorie = list(self.cennik[typ].keys())
+        for i, kategoria in enumerate(kategorie):
+            print(f"{i + 1}. {kategoria.capitalize()}")
+        while True:
+            wybor_kategorii = input("Wybierz kategorię biletu (cyfra): ")
+            if wybor_kategorii.isdigit() and 1 <= int(wybor_kategorii) <= len(kategorie):
+                kategoria = kategorie[int(wybor_kategorii) - 1]
+                break
+            print("Nieprawidłowy wybór. Spróbuj ponownie.")
+
+        bilety = list(self.cennik[typ][kategoria].keys())
+        for i, bilet in enumerate(bilety):
+            print(f"{i + 1}. {bilet} - {self.cennik[typ][kategoria][bilet]} zł")
+        while True:
+            wybor_biletu = input("Wybierz bilet (cyfra): ")
+            if wybor_biletu.isdigit() and 1 <= int(wybor_biletu) <= len(bilety):
+                nazwa = bilety[int(wybor_biletu) - 1]
+                break
+            print("Nieprawidłowy wybór. Spróbuj ponownie.")
+
+        bilet = Ticket(typ, kategoria, nazwa, self.cennik[typ][kategoria][nazwa])
+        self.koszyk.add_ticket(bilet)
+        print(f"\nDodano do koszyka: {nazwa} - {self.cennik[typ][kategoria][nazwa]} zł")
+
+    def dokonaj_platnosci(self):
+        total = self.koszyk.calculate_total()
+        if Payment.process_payment(total):
+            self.koszyk.clear_cart()
+
+    def uruchom(self):
+        while True:
+            print("\n1. Wyświetl cennik")
+            print("2. Dodaj bilet do koszyka")
+            print("3. Pokaż koszyk")
+            print("4. Dokonaj płatności")
+            print("5. Wyjdź")
+            wybor = input("Wybierz opcję (cyfra): ")
+
+            if wybor == '1':
+                self.wyswietl_cennik()
+            elif wybor == '2':
+                self.dodaj_do_koszyka()
+            elif wybor == '3':
+                self.koszyk.show_cart()
+            elif wybor == '4':
+                total = self.koszyk.calculate_total()
+                if Payment.process_payment(total):
+                    self.koszyk.clear_cart()
+            elif wybor == '5':
+                print("Dziękujemy za skorzystanie z automatu biletowego!")
+                break
+            else:
+                print("Nieprawidłowy wybór. Spróbuj ponownie.")
+
 if __name__ == "__main__":
-    automat_biletowy()
+    automat = AutomatBiletowy('prices.json')
+    automat.uruchom()
